@@ -11,3 +11,8 @@ sudo yum install jenkins -y
 sudo systemctl enable jenkins
 sudo systemctl start jenkins
 sudo systemctl status jenkins
+sudo yum install -y git
+
+echo "Install ASPNET CORE"
+sudo rpm -Uvh https://packages.microsoft.com/config/centos/7/packages-microsoft-prod.rpm
+sudo yum install dotnet-sdk-6.0 -y 

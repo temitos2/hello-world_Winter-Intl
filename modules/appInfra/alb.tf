@@ -10,6 +10,13 @@ resource "aws_security_group" "alb_sg" {
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
+  egress {
+    from_port        = 0
+    to_port          = 0
+    protocol         = "-1"
+    cidr_blocks      = ["0.0.0.0/0"]
+    ipv6_cidr_blocks = ["::/0"]
+  }
 }
 
 module "alb" {
@@ -20,9 +27,9 @@ module "alb" {
 
   load_balancer_type = "application"
 
-  vpc_id             = var.vpc_id
-  subnets            = var.public_subnets
-  security_groups    = [aws_security_group.alb_sg.id]
+  vpc_id          = var.vpc_id
+  subnets         = var.public_subnets
+  security_groups = [aws_security_group.alb_sg.id]
 
   target_groups = [
     {
@@ -33,13 +40,13 @@ module "alb" {
     }
   ]
 
- http_tcp_listeners = [
+  http_tcp_listeners = [
     {
       port               = 80
       protocol           = "HTTP"
       target_group_index = 0
     }
-]
+  ]
 
   tags = {
     Environment = "dev"
