@@ -1,0 +1,58 @@
+data "template_file" "userdata" {
+  template = file("${path.module}/userdata.tpl")
+}
+
+data "aws_ami" "amazon-linux-2" {
+  most_recent = true
+
+  filter {
+    name   = "owner-alias"
+    values = ["amazon"]
+  }
+
+  filter {
+    name   = "name"
+    values = ["amzn2-ami-hvm-*-x86_64-ebs"]
+  }
+}
+
+resource "aws_security_group" "jenkins_sg" {
+  name_prefix = "jenkins-sg"
+  description = "Jenkins Server security group"
+  vpc_id      = var.vpc_id
+
+  ingress {
+    description = "Allow HTTP"
+    from_port   = 8080
+    to_port     = 8080
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+  ingress {
+    description = "Allow SSH"
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+  egress {
+    from_port        = 0
+    to_port          = 0
+    protocol         = "-1"
+    cidr_blocks      = ["0.0.0.0/0"]
+    ipv6_cidr_blocks = ["::/0"]
+  }
+}
+
+resource "aws_instance" "Jenkins-server" {
+  ami                    = data.aws_ami.amazon-linux-2.id
+  instance_type          = "t2.medium"
+  vpc_security_group_ids = [aws_security_group.jenkins_sg.id]
+  subnet_id              = var.public_subnets[0]
+  key_name               = var.key_name
+  user_data              = data.template_file.userdata.rendered
+
+  tags = {
+    Name = "Jenkins-Server"
+  }
+}
